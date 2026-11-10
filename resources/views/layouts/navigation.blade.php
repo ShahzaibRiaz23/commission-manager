@@ -17,7 +17,7 @@
                 {{-- Brand --}}
                 <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 rounded-lg">
                     <div class="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white">⚡</div>
-                    <span class="font-extrabold text-lg tracking-tight text-[#12263A] dark:text-white">Xort<span class="text-teal-600 dark:text-teal-400">Ledger</span></span>
+                    <span class="font-extrabold text-lg tracking-tight text-[#12263A] dark:text-white">Commission<span class="text-teal-600 dark:text-teal-400">Manager</span></span>
                 </a>
 
                 {{-- Desktop links --}}

@@ -50,14 +50,14 @@ class DashboardController extends Controller
                 2
             );
 
-            // Monthly breakdown calculation
+            // Monthly breakdown calculation (Updated for MySQL DATE_FORMAT)
             $monthly = (clone $payments)
                 ->selectRaw("
-                strftime('%Y-%m', payment_date) as ym,
-                strftime('%b %Y', payment_date) as month,
-                SUM(payment_amount) as revenue,
-                SUM(va_commission_amount + sales_commission_amount) as commission
-            ")
+                    DATE_FORMAT(payment_date, '%Y-%m') as ym,
+                    DATE_FORMAT(payment_date, '%b %Y') as month,
+                    SUM(payment_amount) as revenue,
+                    SUM(va_commission_amount + sales_commission_amount) as commission
+                ")
                 ->groupBy('ym', 'month')
                 ->orderBy('ym')
                 ->get()

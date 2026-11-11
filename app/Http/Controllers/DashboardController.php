@@ -26,14 +26,16 @@ class DashboardController extends Controller
                 ->whereHas('project', function ($q) use ($request) {
                     $q->when($request->client_id, fn($q, $v) => $q->where('client_id', $v))
                         ->when($request->status, fn($q, $v) => $q->where('status', $v))
-                        ->when($request->va_id, fn($q, $v) => $q->where('va_id', $v))
-                        ->when($request->sales_officer_id, fn($q, $v) => $q->where('sales_officer_id', $v));
+                        ->when($request->sales_officer_id, fn($q, $v) => $q->where('sales_officer_id', $v))
+                        ->when($request->va_id, function ($q, $vaId) {
+                            $q->whereHas('vas', fn($subQ) => $subQ->where('users.id', $vaId));
+                        });
                 });
 
             // Precision Decimal Calculation Helpers
             $sum = fn($query, $col) => (string) ((clone $query)->sum($col) ?: '0');
 
-            $totalProjectRevenue = $sum((clone $payments)->where('payment_type', 'one_time'), 'payment_amount');
+            $totalProjectRevenue = $sum((clone $payments)->where('payment_type', 'one-time'), 'payment_amount');
             $totalRecurringRevenue = $sum((clone $payments)->where('payment_type', 'recurring'), 'payment_amount');
             $totalVaCommissions = $sum($payments, 'va_commission_amount');
             $totalSalesCommissions = $sum($payments, 'sales_commission_amount');
@@ -50,7 +52,7 @@ class DashboardController extends Controller
                 2
             );
 
-            // Monthly breakdown calculation (Updated for MySQL DATE_FORMAT)
+            // Monthly breakdown calculation
             $monthly = (clone $payments)
                 ->selectRaw("
                     DATE_FORMAT(payment_date, '%Y-%m') as ym,
@@ -76,8 +78,28 @@ class DashboardController extends Controller
                     'commission' => $rows->sum(fn($p) => $p->va_commission_amount + $p->sales_commission_amount),
                 ])->sortByDesc('commission')->take(8)->values();
 
-            $vaBreakdown = $this->byPerson($payments, 'va_id', 'va_commission_amount');
             $salesBreakdown = $this->byPerson($payments, 'sales_officer_id', 'sales_commission_amount');
+
+            // VA Breakdown using pivot relation
+            $vaBreakdown = ProjectPayment::with('project.vas')
+                ->when($request->from, fn($q, $v) => $q->whereDate('payment_date', '>=', $v))
+                ->when($request->to, fn($q, $v) => $q->whereDate('payment_date', '<=', $v))
+                ->get()
+                ->flatMap(function ($payment) {
+                    return $payment->project->vas->map(fn($va) => [
+                        'va_id' => $va->id,
+                        'name' => $va->name,
+                        'commission' => $payment->va_commission_amount / max(1, $payment->project->vas->count())
+                    ]);
+                })
+                ->groupBy('va_id')
+                ->map(fn($rows) => [
+                    'name' => $rows->first()['name'],
+                    'commission' => $rows->sum('commission')
+                ])
+                ->sortByDesc('commission')
+                ->take(8)
+                ->values();
 
             return view('dashboard.admin', [
                 'totalProjects' => Project::count(),
@@ -105,7 +127,7 @@ class DashboardController extends Controller
         }
 
         // 2. VA / Sales Officer User Dashboard Logic
-        $assignedProjects = Project::where('va_id', $user->id)
+        $assignedProjects = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))
             ->orWhere('sales_officer_id', $user->id)
             ->with('client')
             ->get();
@@ -114,8 +136,9 @@ class DashboardController extends Controller
 
         $totalEarnedCommission = $userPayments->sum(function ($p) use ($user) {
             $sum = 0;
-            if ($p->project->va_id == $user->id) {
-                $sum += $p->va_commission_amount;
+            if ($p->project->vas->contains($user->id)) {
+                $vaCount = max(1, $p->project->vas->count());
+                $sum += ($p->va_commission_amount / $vaCount);
             }
             if ($p->project->sales_officer_id == $user->id) {
                 $sum += $p->sales_commission_amount;

@@ -20,7 +20,6 @@ class ProjectController extends Controller
     public function create()
     {
         $clients = Client::all();
-        // Fetch users who are Sales Officers or VAs (or all users except admin)
         $users = User::all();
         
         return view('projects.create', compact('clients', 'users'));
@@ -35,8 +34,8 @@ class ProjectController extends Controller
             'sales_officer_id' => 'nullable|exists:users,id',
             'project_amount' => 'required|numeric|min:0',
             'payment_type' => 'required|in:one-time,recurring',
-            'va_commission_percentage' => 'required|numeric|min:0|max:100',
-            'sales_commission_percentage' => 'required|numeric|min:0|max:100',
+            'va_commission_percentage' => 'nullable|numeric|min:0|max:100',
+            'sales_commission_percentage' => 'nullable|numeric|min:0|max:100',
             'status' => 'required|in:pending,active,on_hold,completed,cancelled',
             'start_date' => 'nullable|date',
             'deadline' => 'nullable|date',
@@ -81,9 +80,9 @@ class ProjectController extends Controller
             'sales_officer_id' => 'nullable|exists:users,id',
             'project_amount' => 'required|numeric|min:0',
             'payment_type' => 'required|in:one-time,recurring',
-            'va_commission_percentage' => 'required|numeric|min:0|max:100',
-            'sales_commission_percentage' => 'required|numeric|min:0|max:100',
-            'status' => 'required|in:pending,active,on_hold,completed,cancelled',
+            'va_commission_percentage' => 'nullable|numeric|min:0|max:100',
+            'sales_commission_percentage' => 'nullable|numeric|min:0|max:100',
+            'status' => 'required|in:active,completed,cancelled',
             'start_date' => 'nullable|date',
             'deadline' => 'nullable|date',
             'vas' => 'nullable|array',
@@ -99,7 +98,7 @@ class ProjectController extends Controller
             $project->vas()->detach();
         }
 
-        return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
+        return redirect()->route('projects.show', $project)->with('success', 'Project updated successfully.');
     }
 
     // Delete project

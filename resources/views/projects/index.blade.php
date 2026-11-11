@@ -63,9 +63,15 @@
                                             {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                                         <a href="{{ route('projects.show', $project->id) }}" class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">View</a>
                                         <a href="{{ route('projects.edit', $project->id) }}" class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">Edit</a>
+                                        
+                                        <form action="{{ route('projects.destroy', $project->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this project?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-4">Delete</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty

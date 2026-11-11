@@ -49,4 +49,16 @@ class Project extends Model
                     ->withPivot('custom_commission_percentage')
                     ->withTimestamps();
     }
+
+    // Recurring Payment relationship
+    public function recurringPayment()
+    {
+        return $this->hasOne(RecurringPayment::class);
+    }
+
+    // Payments relationship
+    public function payments()
+    {
+        return $this->hasMany(ProjectPayment::class);
+    }
 }

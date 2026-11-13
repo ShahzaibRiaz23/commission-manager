@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
@@ -16,21 +17,15 @@ class LoginController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
-
             $user = Auth::user();
 
             if ($user->hasRole('Super Admin')) {
                 return redirect()->intended(route('dashboard'));
-            }
-
-            if ($user->hasRole('VA')) {
+            } elseif ($user->hasRole('VA')) {
                 return redirect()->intended(route('va.dashboard'));
-            }
-
-            if ($user->hasRole('Sales Officer')) {
+            } elseif ($user->hasRole('Sales Officer')) {
                 return redirect()->intended(route('sales.dashboard'));
             }
-
 
             return redirect()->intended(route('dashboard'));
         }

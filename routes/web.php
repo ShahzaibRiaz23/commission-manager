@@ -1,13 +1,13 @@
 <?php
 
 use App\Http\Controllers\ClientController;
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\VADashboardController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SalesDashboardController;
+use App\Http\Controllers\VADashboardController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -37,7 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Main / Admin Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->middleware('role:Super Admin')
         ->name('dashboard');
 
     // Admin: Create New Staff Account Form (VA / Sales)
@@ -62,4 +61,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

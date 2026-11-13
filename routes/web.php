@@ -6,15 +6,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\DashboardController;
-
+use App\Http\Controllers\VADashboardController;
+use App\Http\Controllers\SalesDashboardController;
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -35,7 +32,34 @@ Route::get('financial/payments', [PaymentController::class, 'index'])->name('pay
 Route::patch('financial/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
 Route::get('financial/payments/export', [PaymentController::class, 'export'])->name('payments.export');
 
-// Update the existing dashboard route
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+// Role-Based Dashboards & Super Admin Management
+Route::middleware(['auth', 'verified'])->group(function () {
 
-require __DIR__.'/auth.php';
+    // Main / Admin Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('role:Super Admin')
+        ->name('dashboard');
+
+    // Admin: Create New Staff Account Form (VA / Sales)
+    Route::get('/admin/users/create', [DashboardController::class, 'createUser'])
+        ->middleware('role:Super Admin')
+        ->name('admin.users.create');
+
+    // Admin: Store New Staff Account in Database
+    Route::post('/admin/users', [DashboardController::class, 'storeUser'])
+        ->middleware('role:Super Admin')
+        ->name('admin.users.store');
+
+    // Virtual Assistant (VA) Dashboard
+    Route::get('/va/dashboard', [VADashboardController::class, 'index'])
+        ->middleware('role:VA')
+        ->name('va.dashboard');
+
+    // Sales Officer Dashboard
+    Route::get('/sales/dashboard', [SalesDashboardController::class, 'index'])
+        ->middleware('role:Sales Officer')
+        ->name('sales.dashboard');
+
+});
+
+require __DIR__ . '/auth.php';

@@ -50,7 +50,8 @@
                                 <option value="">Select Client</option>
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}" @selected(old('client_id') == $client->id)>
-                                        {{ $client->name }}</option>
+                                        {{ $client->name }}
+                                    </option>
                                 @endforeach
                             </select>
                             @error('client_id')
@@ -127,19 +128,22 @@
                         </div>
                     </div>
 
-                    <!-- Assign VAs -->
+                    <!-- Assign Virtual Assistant (Dropdown) -->
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Assign
-                            Virtual Assistants (VAs)</label>
-                        <div class="grid sm:grid-cols-3 gap-3">
-                            @foreach($users as $user)
-                                <label
-                                    class="flex items-center space-x-2 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer">
-                                    <input type="checkbox" name="vas[]" value="{{ $user->id }}" @checked(in_array($user->id, old('vas', []))) class="rounded border-slate-300 text-teal-600 focus:ring-teal-600">
-                                    <span class="text-sm {{ $ink }}">{{ $user->name }}</span>
-                                </label>
+                        <label for="va_id"
+                            class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Assign
+                            Virtual Assistant (VA)</label>
+                        <select name="va_id" id="va_id" class="{{ $field }}">
+                            <option value="">Select Virtual Assistant</option>
+                            @foreach($vas as $va)
+                                <option value="{{ $va->id }}" @selected(old('va_id') == $va->id)>
+                                    {{ $va->name }}
+                                </option>
                             @endforeach
-                        </div>
+                        </select>
+                        @error('va_id')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Sales Officer -->
@@ -149,9 +153,11 @@
                             Officer</label>
                         <select name="sales_officer_id" id="sales_officer_id" class="{{ $field }}">
                             <option value="">Select Sales Officer</option>
-                            @foreach($users as $user)
-                                <option value="{{ $user->id }}" @selected(old('sales_officer_id') == $user->id)>
-                                    {{ $user->name }}</option>
+                            @foreach($salesOfficers as $salesOfficer)
+                                <option value="{{ $salesOfficer->id }}"
+                                    @selected(old('sales_officer_id') == $salesOfficer->id)>
+                                    {{ $salesOfficer->name }}
+                                </option>
                             @endforeach
                         </select>
                         @error('sales_officer_id')

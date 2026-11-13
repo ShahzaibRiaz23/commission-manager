@@ -42,13 +42,18 @@
     <div class="min-h-screen bg-[#EDF1F5] dark:bg-[#0B1622] py-8 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
-            {{-- Header --}}
+            {{-- Header with Create Staff Button --}}
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <h1 class="font-serif text-3xl {{ $ink }} tracking-tight">Where the money goes</h1>
                     <p class="text-sm {{ $muted }} mt-1">Every dollar collected, split between VAs, sales officers and the company.</p>
                 </div>
-                <div class="flex items-center gap-2" x-data="{ dark: document.documentElement.classList.contains('dark') }">
+                <div class="flex flex-wrap items-center gap-2" x-data="{ dark: document.documentElement.classList.contains('dark') }">
+                    {{-- Create VA / Sales Officer Button --}}
+                    <a href="{{ route('admin.users.create') }}"
+                       class="px-4 py-2 rounded-lg bg-teal-600 text-sm font-medium text-white hover:bg-teal-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
+                        + Create Staff Account
+                    </a>
                     <button type="button"
                             @click="dark = !dark; document.documentElement.classList.toggle('dark', dark); localStorage.setItem('theme', dark ? 'dark' : 'light')"
                             class="px-4 py-2 rounded-lg border border-[#12263A]/20 dark:border-white/20 text-sm font-medium {{ $ink }} hover:bg-white dark:hover:bg-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600">
@@ -59,7 +64,7 @@
                         Export payments
                     </a>
                     <a href="{{ route('payments.index') }}"
-                       class="px-4 py-2 rounded-lg bg-[#12263A] dark:bg-teal-600 text-sm font-medium text-white hover:opacity-90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
+                       class="px-4 py-2 rounded-lg bg-[#12263A] dark:bg-teal-700 text-sm font-medium text-white hover:opacity-90 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
                         Open ledger
                     </a>
                 </div>

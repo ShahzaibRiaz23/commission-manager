@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sign in - XortLedger</title>
+    <title>Sign in - CommissionManager</title>
     <script>if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');</script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -16,7 +16,7 @@
         <aside class="hidden lg:flex flex-col justify-between bg-[#12263A] text-white p-12">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center">⚡</div>
-                <span class="font-extrabold text-xl tracking-tight">Xort<span class="text-teal-400">Ledger</span></span>
+                <span class="font-extrabold text-xl tracking-tight">Commission<span class="text-teal-400">Manager</span></span>
             </div>
 
             <div class="max-w-md">

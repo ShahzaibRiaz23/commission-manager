@@ -19,10 +19,11 @@ class ProjectController extends Controller
     // Show form to create a project
     public function create()
     {
-        $clients = Client::all();
-        $users = User::all();
-        
-        return view('projects.create', compact('clients', 'users'));
+        $clients = Client::orderBy('name')->get();
+        $vas = User::role('VA')->orderBy('name')->get();
+        $salesOfficers = User::role('Sales Officer')->orderBy('name')->get();
+
+        return view('projects.create', compact('clients', 'vas', 'salesOfficers'));
     }
 
     // Store a new project
@@ -67,7 +68,7 @@ class ProjectController extends Controller
         $clients = Client::all();
         $users = User::all();
         $project->load('vas');
-        
+
         return view('projects.edit', compact('project', 'clients', 'users'));
     }
 

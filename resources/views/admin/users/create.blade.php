@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Create New Staff Account (VA / Sales)') }}
+            {{ __('Create New Staff Account (Experts / Sales)') }}
         </h2>
     </x-slot>
 
@@ -91,7 +91,7 @@
                             class="w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded-md shadow-sm">
                             <option value="">-- Select Role --</option>
                             @foreach($roles as $role)
-                                <option value="{{ $role->name }}">{{ ucwords(str_replace('-', ' ', $role->name)) }}</option>
+                                <option value="{{ $role->name }}">{{ $role->name === 'VA' ? 'Experts' : ucwords(str_replace('-', ' ', $role->name)) }}</option>
                             @endforeach
                         </select>
                         @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror

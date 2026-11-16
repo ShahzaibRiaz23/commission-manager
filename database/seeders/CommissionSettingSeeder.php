@@ -11,7 +11,7 @@ class CommissionSettingSeeder extends Seeder
     {
         CommissionSetting::firstOrCreate(
             ['key' => 'default_va_commission'],
-            ['value' => 10.00, 'description' => 'Default Virtual Assistant commission percentage']
+            ['value' => 10.00, 'description' => 'Default Experts commission percentage']
         );
 
         CommissionSetting::firstOrCreate(

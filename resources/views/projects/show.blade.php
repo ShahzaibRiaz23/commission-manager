@@ -56,19 +56,19 @@
                 </div>
 
                 <div class="{{ $card }} p-6 md:col-span-2 space-y-4">
-                    <h3 class="font-semibold text-base {{ $ink }}">Assigned VAs</h3>
+                    <h3 class="font-semibold text-base {{ $ink }}">Assigned Experts</h3>
                     @if($project->vas->count() > 0)
                         <div class="divide-y divide-slate-200 dark:divide-white/10">
                             @foreach($project->vas as $va)
                                 <div class="py-2 flex items-center justify-between text-sm">
-                                    <span class="{{ $ink }}">{{ $va->name }}</span>
+                                    <span class="{{ $ink }}">{{ preg_replace('/\s*\(VA\)$/i', ' (Experts)', $va->name) }}</span>
                                     <span class="{{ $muted }}">Custom Commission:
                                         {{ $va->pivot->custom_commission_percentage ?? $project->va_commission_percentage }}%</span>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm {{ $muted }}">No VAs assigned to this project.</p>
+                        <p class="text-sm {{ $muted }}">No Experts assigned to this project.</p>
                     @endif
                 </div>
             </div>
@@ -89,7 +89,7 @@
                                 <tr>
                                     <th class="pb-3">Date</th>
                                     <th class="pb-3">Amount</th>
-                                    <th class="pb-3">VA Commission</th>
+                                    <th class="pb-3">Experts Commission</th>
                                     <th class="pb-3">Sales Commission</th>
                                     <th class="pb-3">Status</th>
                                 </tr>

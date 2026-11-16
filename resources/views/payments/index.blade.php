@@ -32,7 +32,7 @@
                                 <th class="{{ $th }}">Date</th>
                                 <th class="{{ $th }}">Project / client</th>
                                 <th class="{{ $th }}">Amount</th>
-                                <th class="{{ $th }}"><span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>VA commission</span></th>
+                                <th class="{{ $th }}"><span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Experts commission</span></th>
                                 <th class="{{ $th }}"><span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-sky-500"></span>Sales commission</span></th>
                                 <th class="{{ $th }}"><span class="inline-flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-teal-600"></span>Company share</span></th>
                                 <th class="{{ $th }}">Status</th>

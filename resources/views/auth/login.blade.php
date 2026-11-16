@@ -26,14 +26,14 @@
                 {{-- Example split --}}
                 <div class="mt-10">
                     <p class="text-sm text-slate-300">Example: a $1,000 payment</p>
-                    <div class="mt-3 flex h-4 w-full overflow-hidden rounded-full bg-white/10" role="img" aria-label="Example split: VA 10%, sales officer 5%, company 85%">
+                    <div class="mt-3 flex h-4 w-full overflow-hidden rounded-full bg-white/10" role="img" aria-label="Example split: Experts 10%, sales officer 5%, company 85%">
                         <div class="bg-amber-400" style="width: 10%"></div>
                         <div class="bg-sky-500" style="width: 5%"></div>
                         <div class="bg-teal-500" style="width: 85%"></div>
                     </div>
                     <dl class="mt-4 grid grid-cols-3 gap-4 text-sm">
                         <div>
-                            <dt class="flex items-center gap-2 text-slate-300"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>VA</dt>
+                            <dt class="flex items-center gap-2 text-slate-300"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>Experts</dt>
                             <dd class="mt-1 font-semibold tabular-nums">$100</dd>
                         </div>
                         <div>

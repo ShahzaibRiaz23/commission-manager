@@ -105,23 +105,62 @@
                         </div>
                     </div>
 
-                    <!-- Assign VAs -->
+                    <!-- Assign Experts -->
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Assign
-                            Virtual Assistants (VAs)</label>
-                        <div class="grid sm:grid-cols-3 gap-3">
-                            @php
-                                $assignedVas = old('vas', $project->vas->pluck('id')->toArray());
-                            @endphp
-                            @foreach($users as $user)
-                                @if($user->hasRole('VA'))
-                                    <label
-                                        class="flex items-center space-x-2 p-3 rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 cursor-pointer">
-                                        <input type="checkbox" name="vas[]" value="{{ $user->id }}" @checked(in_array($user->id, $assignedVas)) class="rounded border-slate-300 text-teal-600 focus:ring-teal-600">
-                                        <span class="text-sm {{ $ink }}">{{ $user->name }}</span>
+                        <span id="vas-label"
+                            class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Assign
+                            Experts</span>
+                        @php
+                            $assignedVas = collect(old('vas', $project->vas->pluck('id')->toArray()))->all();
+                            $expertUsers = $users->filter(fn($user) => $user->hasRole('VA'));
+
+                            // Prepare an array of expert id => name for AlpineJS mapping
+                            $expertsMap = $expertUsers->mapWithKeys(function ($user) {
+                                $cleanName = preg_replace('/\s*\(VA\)$/i', '', $user->name);
+                                return [$user->id => $cleanName];
+                            })->toArray();
+                        @endphp
+
+                        <div x-data="{ 
+                open: false, 
+                selectedVas: @js($assignedVas),
+                expertsMap: @js($expertsMap),
+                get summaryText() {
+                    if (this.selectedVas.length === 0) return 'Assign Experts';
+                    return this.selectedVas.map(id => this.expertsMap[id]).filter(Boolean).join(', ');
+                }
+            }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative">
+
+                            <button type="button" aria-labelledby="vas-label vas-selection-summary"
+                                aria-controls="vas-options" :aria-expanded="open.toString()" @click="open = !open"
+                                class="{{ $field }} flex items-center justify-between gap-3 px-3 py-2.5 text-left border border-slate-300 dark:border-slate-700 rounded-md shadow-sm bg-white dark:bg-[#12263A]">
+                                <span id="vas-selection-summary" class="truncate" x-text="summaryText"></span>
+                                <svg class="h-4 w-4 shrink-0 text-slate-500 transition-transform"
+                                    :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                        d="M5.22 7.22a.75.75 0 0 1 1.06 0L10 10.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 8.28a.75.75 0 0 1 0-1.06Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <div id="vas-options" x-cloak x-show="open" x-transition style="display: none;"
+                                class="absolute z-20 mt-2 max-h-64 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg dark:border-white/10 dark:bg-[#12263A]">
+                                @forelse($expertUsers as $user)
+                                    @php
+                                        $expertName = preg_replace('/\s*\(VA\)$/i', '', $user->name);
+                                    @endphp
+                                    <label for="expert-{{ $user->id }}"
+                                        class="flex cursor-pointer items-center gap-2 rounded-md p-3 hover:bg-slate-50 dark:hover:bg-white/5">
+                                        <input id="expert-{{ $user->id }}" type="checkbox" name="vas[]"
+                                            value="{{ $user->id }}" x-model.number="selectedVas"
+                                            class="rounded border-slate-300 text-teal-600 focus:ring-teal-600">
+                                        <span class="text-sm {{ $ink }}">{{ $expertName }}</span>
                                     </label>
-                                @endif
-                            @endforeach
+                                @empty
+                                    <p class="px-3 py-2 text-sm {{ $muted }}">No experts available.</p>
+                                @endforelse
+                            </div>
                         </div>
                         @error('vas')
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>

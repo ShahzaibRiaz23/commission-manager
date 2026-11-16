@@ -95,7 +95,7 @@ class DashboardController extends Controller
 
         $salesBreakdown = $this->byPerson($payments, 'sales_officer_id', 'sales_commission_amount');
 
-        // VA Breakdown using pivot relation
+        // Experts breakdown using pivot relation
         $vaBreakdown = ProjectPayment::with('project.vas')
             ->when($request->from, fn ($q, $v) => $q->whereDate('payment_date', '>=', $v))
             ->when($request->to, fn ($q, $v) => $q->whereDate('payment_date', '<=', $v))
@@ -103,7 +103,7 @@ class DashboardController extends Controller
             ->flatMap(function ($payment) {
                 return $payment->project->vas->map(fn ($va) => [
                     'va_id' => $va->id,
-                    'name' => $va->name,
+                    'name' => preg_replace('/\s*\(VA\)$/i', ' (Experts)', $va->name),
                     'commission' => $payment->va_commission_amount / max(1, $payment->project->vas->count()),
                 ]);
             })

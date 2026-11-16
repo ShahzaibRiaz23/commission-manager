@@ -64,7 +64,7 @@ class PaymentController extends Controller
             $file = fopen('php://output', 'w');
 
             // CSV Header Row
-            fputcsv($file, ['ID', 'Date', 'Project Name', 'Client', 'Payment Amount', 'VA Commission', 'Sales Commission', 'Remaining Revenue', 'Status']);
+            fputcsv($file, ['ID', 'Date', 'Project Name', 'Client', 'Payment Amount', 'Experts Commission', 'Sales Commission', 'Remaining Revenue', 'Status']);
 
             // CSV Data Rows
             foreach ($payments as $payment) {
@@ -86,7 +86,7 @@ class PaymentController extends Controller
 
         return response()->stream($callback, 200, [
             "Content-type" => "text/csv",
-            "Content-Disposition" => "attachment; filename=$fileName",
+            'Content-Disposition' => "attachment; filename=$fileName",
             "Pragma" => "no-cache",
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
             "Expires" => "0"

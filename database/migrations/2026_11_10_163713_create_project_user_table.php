@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('project_user', function (Blueprint $table) {
             $table->id();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // VA or team member
-            $table->decimal('custom_commission_percentage', 5, 2)->nullable(); // Optional override per VA
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Expert or team member
+            $table->decimal('custom_commission_percentage', 5, 2)->nullable(); // Optional override per Expert
             $table->timestamps();
         });
     }

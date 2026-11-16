@@ -39,7 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    // Admin: Create New Staff Account Form (VA / Sales)
+    // Admin: Create New Staff Account Form (Experts / Sales)
     Route::get('/admin/users/create', [DashboardController::class, 'createUser'])
         ->middleware('role:Super Admin')
         ->name('admin.users.create');
@@ -49,7 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:Super Admin')
         ->name('admin.users.store');
 
-    // Virtual Assistant (VA) Dashboard
+    // Experts Dashboard
     Route::get('/va/dashboard', [VADashboardController::class, 'index'])
         ->middleware('role:VA')
         ->name('va.dashboard');

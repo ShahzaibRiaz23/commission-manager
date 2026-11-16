@@ -105,7 +105,7 @@
                     <div class="grid sm:grid-cols-2 gap-6">
                         <div>
                             <label for="va_commission_percentage"
-                                class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">VA
+                                class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Experts
                                 Commission (%)</label>
                             <input type="number" step="0.01" name="va_commission_percentage"
                                 id="va_commission_percentage" value="{{ old('va_commission_percentage', '10.00') }}"
@@ -128,16 +128,16 @@
                         </div>
                     </div>
 
-                    <!-- Assign Virtual Assistant (Dropdown) -->
+                    <!-- Assign Expert (Dropdown) -->
                     <div>
                         <label for="va_id"
                             class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Assign
-                            Virtual Assistant (VA)</label>
+                            Experts</label>
                         <select name="va_id" id="va_id" class="{{ $field }}">
-                            <option value="">Select Virtual Assistant</option>
+                            <option value="">Select Expert</option>
                             @foreach($vas as $va)
                                 <option value="{{ $va->id }}" @selected(old('va_id') == $va->id)>
-                                    {{ $va->name }}
+                                    {{ preg_replace('/\s*\(VA\)$/i', ' (Experts)', $va->name) }}
                                 </option>
                             @endforeach
                         </select>

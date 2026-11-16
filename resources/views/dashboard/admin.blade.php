@@ -26,14 +26,14 @@
         $filters = [
             ['project_id', 'Project', ($projects ?? collect())->pluck('name', 'id')],
             ['client_id', 'Client', ($clients ?? collect())->pluck('name', 'id')],
-            ['va_id', 'VA / team member', ($vas ?? collect())->pluck('name', 'id')],
+            ['va_id', 'Experts', ($vas ?? collect())->pluck('name', 'id')],
             ['sales_officer_id', 'Sales officer', ($salesOfficers ?? collect())->pluck('name', 'id')],
             ['status', 'Project status', collect(['pending' => 'Pending', 'active' => 'Active', 'on_hold' => 'On hold', 'completed' => 'Completed', 'cancelled' => 'Cancelled'])],
             ['payment_type', 'Payment type', collect(['one_time' => 'One-time', 'recurring' => 'Recurring'])],
         ];
 
         $breakdowns = [
-            ['VA-wise commission', $vaBreakdown ?? collect(), 'bg-amber-400'],
+            ['Experts commission', $vaBreakdown ?? collect(), 'bg-amber-400'],
             ['Sales officer-wise commission', $salesBreakdown ?? collect(), 'bg-sky-500'],
             ['Project-wise commission', $projectBreakdown ?? collect(), 'bg-teal-600'],
         ];
@@ -49,7 +49,7 @@
                     <p class="text-sm {{ $muted }} mt-1">Every dollar collected, split between VAs, sales officers and the company.</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2" x-data="{ dark: document.documentElement.classList.contains('dark') }">
-                    {{-- Create VA / Sales Officer Button --}}
+                    {{-- Create Experts / Sales Officer Button --}}
                     <a href="{{ route('admin.users.create') }}"
                        class="px-4 py-2 rounded-lg bg-teal-600 text-sm font-medium text-white hover:bg-teal-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2">
                         + Create Staff Account
@@ -121,7 +121,7 @@
                     <p class="text-sm {{ $muted }}">Total collected: <span class="font-semibold {{ $ink }} tabular-nums">{{ $money($gross) }}</span></p>
 
                     <div class="mt-5 flex h-5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-white/10"
-                         role="img" aria-label="VA {{ $p($vaTotal) }}%, sales {{ $p($salesTotal) }}%, company {{ $p($remaining) }}%">
+                         role="img" aria-label="Experts {{ $p($vaTotal) }}%, sales {{ $p($salesTotal) }}%, company {{ $p($remaining) }}%">
                         <div class="bg-amber-400" style="width: {{ $p($vaTotal) }}%"></div>
                         <div class="bg-sky-500" style="width: {{ $p($salesTotal) }}%"></div>
                         <div class="bg-teal-600" style="width: {{ $p($remaining) }}%"></div>
@@ -129,7 +129,7 @@
 
                     <dl class="mt-6 grid sm:grid-cols-3 gap-6">
                         @foreach ([
-                            ['Paid to VAs', $vaTotal, 'bg-amber-400', $ink],
+                            ['Paid to Experts', $vaTotal, 'bg-amber-400', $ink],
                             ['Paid to sales officers', $salesTotal, 'bg-sky-500', $ink],
                             ['Kept by the company', $remaining, 'bg-teal-600', 'text-teal-700 dark:text-teal-300'],
                         ] as [$label, $amount, $dotColor, $textColor])
@@ -225,7 +225,7 @@
                                     <div class="bg-sky-500" style="width: {{ $w($sales) }}%"></div>
                                     <div class="bg-teal-600" style="width: {{ $w($company) }}%"></div>
                                 </div>
-                                <div class="mt-1.5 text-xs {{ $muted }} tabular-nums">VA {{ $money($va) }} &middot; Sales {{ $money($sales) }}</div>
+                                <div class="mt-1.5 text-xs {{ $muted }} tabular-nums">Experts {{ $money($va) }} &middot; Sales {{ $money($sales) }}</div>
                             </div>
                             <div class="md:col-span-2 md:text-right">
                                 <div class="flex md:justify-end items-center gap-2 text-sm {{ $ink }}">

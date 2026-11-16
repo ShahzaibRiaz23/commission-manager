@@ -64,7 +64,7 @@ class ProjectController extends Controller
         ]);
 
         // Sales Officer restriction & auto-assignment
-        if ($user->hasRole('Sales Officer')) {
+        if ($user->hasRole('Sales Officer') && ! $user->hasRole('Super Admin')) {
             $validated['sales_officer_id'] = $user->id;
             // Prevent commission manipulation from request payload
             unset($validated['va_commission_percentage'], $validated['sales_commission_percentage']);
@@ -121,9 +121,8 @@ class ProjectController extends Controller
             'vas.*' => 'exists:users,id',
         ]);
 
-        // AGAR USER SALES OFFICER HAI, TAB USKI ID FORCE HO. 
-        // AGAR SUPER ADMIN HAI, TOH JO DROPDOWN SE SELECT KIA HAI WAHI SAVE HO.
-        if ($user->hasRole('Sales Officer')) {
+        // Only non-admin Sales Officers are restricted to assigning themselves.
+        if ($user->hasRole('Sales Officer') && ! $user->hasRole('Super Admin')) {
             $validated['sales_officer_id'] = $user->id;
             unset($validated['va_commission_percentage'], $validated['sales_commission_percentage']);
         }

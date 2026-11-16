@@ -9,10 +9,27 @@ use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    // List all projects with pagination and relationships
+    // List all projects with pagination and relationships (Role-based scope)
     public function index()
     {
-        $projects = Project::with(['client', 'salesOfficer', 'vas'])->latest()->paginate(10);
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Admin')) {
+            $projects = Project::with(['client', 'salesOfficer', 'vas'])->latest()->paginate(10);
+        } elseif ($user->hasRole('Sales Officer')) {
+            $projects = Project::where('sales_officer_id', $user->id)
+                ->with(['client', 'salesOfficer', 'vas'])
+                ->latest()
+                ->paginate(10);
+        } elseif ($user->hasRole('VA')) {
+            $projects = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))
+                ->with(['client', 'salesOfficer', 'vas'])
+                ->latest()
+                ->paginate(10);
+        } else {
+            $projects = Project::whereRaw('1 = 0')->paginate(10);
+        }
+
         return view('projects.index', compact('projects'));
     }
 

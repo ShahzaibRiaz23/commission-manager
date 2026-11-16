@@ -6,10 +6,10 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <!-- Total Projects -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <div class="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Projects</div>
@@ -31,7 +31,8 @@
                 <!-- Total Commission -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <div class="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Commission</div>
-                    <div class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">${{ number_format($totalCommission, 2) }}</div>
+                    <div class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">
+                        ${{ number_format($totalCommission, 2) }}</div>
                 </div>
             </div>
 
@@ -43,7 +44,8 @@
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead>
-                                <tr class="bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                <tr
+                                    class="bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     <th class="px-6 py-3">Project Name</th>
                                     <th class="px-6 py-3">Client</th>
                                     <th class="px-6 py-3">Status</th>
@@ -53,18 +55,100 @@
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse($projects as $project)
                                     <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $project->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $project->name ?? 'N/A' }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $project->client->name ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $project->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $project->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                                                 {{ ucfirst($project->status) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $project->created_at->format('Y-m-d') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $project->created_at->format('Y-m-d') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No projects assigned yet.</td>
+                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No projects assigned
+                                            yet.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assigned Clients Table -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium mb-4">My Assigned Clients</h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead>
+                                <tr
+                                    class="bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th class="px-6 py-3">Client Name</th>
+                                    <th class="px-6 py-3">Email</th>
+                                    <th class="px-6 py-3">Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                @forelse($clients as $client)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $client->name ?? 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $client->email ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $client->phone ?? 'N/A' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500">No clients found for
+                                            assigned projects.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assigned Payments Ledger Table -->
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium mb-4">Payments & Commission Ledger</h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead>
+                                <tr
+                                    class="bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                    <th class="px-6 py-3">Project</th>
+                                    <th class="px-6 py-3">Payment Amount</th>
+                                    <th class="px-6 py-3">VA Commission</th>
+                                    <th class="px-6 py-3">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                @forelse($payments as $payment)
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                            {{ $payment->project->name ?? 'N/A' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            ${{ number_format($payment->payment_amount, 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">
+                                            ${{ number_format($payment->va_commission_amount, 2) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {{ optional($payment->payment_date)->format('Y-m-d') ?? $payment->created_at->format('Y-m-d') }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No payment records
+                                            found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>

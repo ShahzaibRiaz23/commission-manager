@@ -28,16 +28,31 @@ class PaymentController extends Controller
             'recurring_payment_id' => 'nullable|exists:recurring_payments,id',
         ]);
 
-        // Use the CommissionService to securely record payment and calculate commissions
+
         $commissionService->recordPayment($project, $validated);
 
         return redirect()->route('projects.show', $project->id)->with('success', 'Payment recorded and commissions calculated successfully.');
     }
 
-    // List all financial payment transactions across system
+    // List all financial payment transactions (Role-based scoped)
     public function index()
     {
-        $payments = ProjectPayment::with(['project.client'])->latest()->paginate(15);
+        $user = auth()->user();
+
+        $query = ProjectPayment::with(['project.client']);
+
+        if ($user->hasRole('Sales Officer')) {
+            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
+            $query->whereIn('project_id', $projectIds);
+        } elseif ($user->hasRole('VA')) {
+            $projectIds = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))->pluck('id');
+            $query->whereIn('project_id', $projectIds);
+        } elseif (!$user->hasRole('Super Admin')) {
+            $query->whereRaw('1 = 0');
+        }
+
+        $payments = $query->latest('payment_date')->paginate(15);
+
         return view('payments.index', compact('payments'));
     }
 
@@ -53,12 +68,25 @@ class PaymentController extends Controller
         return back()->with('success', 'Payment status updated successfully.');
     }
 
-    // Add this method inside PaymentController
+    // Export filtered payments ledger to CSV
     public function export(): StreamedResponse
     {
+        $user = auth()->user();
         $fileName = 'payments_ledger_' . date('Y-m-d') . '.csv';
 
-        $payments = ProjectPayment::with(['project.client'])->latest()->get();
+        $query = ProjectPayment::with(['project.client']);
+
+        if ($user->hasRole('Sales Officer')) {
+            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
+            $query->whereIn('project_id', $projectIds);
+        } elseif ($user->hasRole('VA')) {
+            $projectIds = $user->projects()->pluck('projects.id');
+            $query->whereIn('project_id', $projectIds);
+        } elseif (!$user->hasRole('Super Admin')) {
+            $query->whereRaw('1 = 0');
+        }
+
+        $payments = $query->latest('payment_date')->get();
 
         $callback = function () use ($payments) {
             $file = fopen('php://output', 'w');
@@ -70,7 +98,7 @@ class PaymentController extends Controller
             foreach ($payments as $payment) {
                 fputcsv($file, [
                     $payment->id,
-                    $payment->payment_date->format('Y-m-d'),
+                    optional($payment->payment_date)->format('Y-m-d') ?? $payment->created_at->format('Y-m-d'),
                     $payment->project->name ?? 'N/A',
                     $payment->project->client->name ?? 'N/A',
                     $payment->payment_amount,

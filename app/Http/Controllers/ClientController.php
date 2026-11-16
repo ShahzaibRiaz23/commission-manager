@@ -3,14 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Project;
 use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    // List all clients
+    // List all clients (Role-based scope)
     public function index()
     {
-        $clients = Client::latest()->paginate(10);
+        $user = auth()->user();
+
+        if ($user->hasRole('Super Admin')) {
+            $clients = Client::latest()->paginate(10);
+        } elseif ($user->hasRole('Sales Officer')) {
+            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
+            $clientIds = Project::whereIn('id', $projectIds)->pluck('client_id')->unique();
+            $clients = Client::whereIn('id', $clientIds)->latest()->paginate(10);
+        } elseif ($user->hasRole('VA')) {
+            $projectIds = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))->pluck('id');
+            $clientIds = Project::whereIn('id', $projectIds)->pluck('client_id')->unique();
+            $clients = Client::whereIn('id', $clientIds)->latest()->paginate(10);
+        } else {
+            $clients = Client::whereRaw('1 = 0')->paginate(10);
+        }
+
         return view('clients.index', compact('clients'));
     }
 

@@ -168,22 +168,21 @@
                     </div>
 
                     <!-- Sales Officer -->
+                    @role('Super Admin')
                     <div>
                         <label for="sales_officer_id"
                             class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Sales
                             Officer</label>
                         <select name="sales_officer_id" id="sales_officer_id" class="{{ $field }}">
                             <option value="">Select Sales Officer</option>
-                            @foreach($users as $user)
-                                @if($user->hasRole('Sales Officer'))
-                                    <option value="{{ $user->id }}" @selected(old('sales_officer_id', $project->sales_officer_id) == $user->id)>{{ $user->name }}</option>
-                                @endif
+                            @foreach($salesOfficers as $officer)
+                                <option value="{{ $officer->id }}" @selected(old('sales_officer_id', $project->sales_officer_id) == $officer->id)>
+                                    {{ $officer->name }}
+                                </option>
                             @endforeach
                         </select>
-                        @error('sales_officer_id')
-                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                        @enderror
                     </div>
+                    @endrole
 
                     <!-- Actions -->
                     <div

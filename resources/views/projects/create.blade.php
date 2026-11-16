@@ -101,7 +101,8 @@
                         </div>
                     </div>
 
-                    <!-- Commission Percentages -->
+                    <!-- Commission Percentages (Visible only to Super Admin) -->
+                    @role('Super Admin')
                     <div class="grid sm:grid-cols-2 gap-6">
                         <div>
                             <label for="va_commission_percentage"
@@ -127,8 +128,10 @@
                             @enderror
                         </div>
                     </div>
+                    @endrole
 
-                    <!-- Assign Expert (Dropdown) -->
+                    <!-- Assign Expert (Visible only to Super Admin) -->
+                    @role('Super Admin')
                     <div>
                         <label for="va_id"
                             class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Assign
@@ -145,8 +148,10 @@
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    @endrole
 
-                    <!-- Sales Officer -->
+                    <!-- Sales Officer (Visible only to Super Admin) -->
+                    @role('Super Admin')
                     <div>
                         <label for="sales_officer_id"
                             class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Sales
@@ -164,6 +169,7 @@
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    @endrole
 
                     <!-- Actions -->
                     <div

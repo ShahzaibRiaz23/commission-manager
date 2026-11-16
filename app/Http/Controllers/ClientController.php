@@ -13,13 +13,10 @@ class ClientController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasRole('Super Admin')) {
+        if ($user->hasRole('Super Admin') || $user->hasRole('Sales Officer')) {
             $clients = Client::latest()->paginate(10);
-        } elseif ($user->hasRole('Sales Officer')) {
-            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
-            $clientIds = Project::whereIn('id', $projectIds)->pluck('client_id')->unique();
-            $clients = Client::whereIn('id', $clientIds)->latest()->paginate(10);
         } elseif ($user->hasRole('VA')) {
+        
             $projectIds = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))->pluck('id');
             $clientIds = Project::whereIn('id', $projectIds)->pluck('client_id')->unique();
             $clients = Client::whereIn('id', $clientIds)->latest()->paginate(10);

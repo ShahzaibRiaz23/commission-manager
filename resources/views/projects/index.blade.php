@@ -22,12 +22,15 @@
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
                 <div>
                     <h1 class="font-serif text-3xl {{ $ink }} tracking-tight">Projects</h1>
-                    <p class="text-sm {{ $muted }} mt-1">Track budgets, sales officers and where each project stands.</p>
+                    <p class="text-sm {{ $muted }} mt-1">Track budgets, sales officers and where each project stands.
+                    </p>
                 </div>
+                @role('Super Admin|Sales Officer')
                 <a href="{{ route('projects.create') }}"
-                   class="inline-flex items-center px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-sm font-medium text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1622]">
+                    class="inline-flex items-center px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-sm font-medium text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1622]">
                     Create project
                 </a>
+                @endrole
             </div>
 
             {{-- Table --}}
@@ -49,36 +52,53 @@
                                 <tr class="hover:bg-slate-50 dark:hover:bg-white/5 transition">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <a href="{{ route('projects.show', $project->id) }}"
-                                           class="text-sm font-semibold text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">{{ $project->name }}</a>
+                                            class="text-sm font-semibold text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">{{ $project->name }}</a>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }}">{{ $project->client->name ?? '-' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }}">
+                                        {{ $project->client->name ?? '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="font-serif text-base {{ $ink }} tabular-nums">${{ number_format($project->project_amount, 2) }}</div>
-                                        <div class="text-xs {{ $muted }}">{{ ucfirst(str_replace('_', ' ', $project->payment_type)) }}</div>
+                                        <div class="font-serif text-base {{ $ink }} tabular-nums">
+                                            ${{ number_format($project->project_amount, 2) }}</div>
+                                        <div class="text-xs {{ $muted }}">
+                                            {{ ucfirst(str_replace('_', ' ', $project->payment_type)) }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }}">{{ $project->salesOfficer->name ?? 'Not assigned' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }}">
+                                        {{ $project->salesOfficer->name ?? 'Not assigned' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="inline-flex items-center gap-2 text-sm {{ $ink }}">
-                                            <span class="w-2.5 h-2.5 rounded-full {{ $statusDot[$project->status] ?? 'bg-slate-400' }}"></span>
+                                            <span
+                                                class="w-2.5 h-2.5 rounded-full {{ $statusDot[$project->status] ?? 'bg-slate-400' }}"></span>
                                             {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                        <a href="{{ route('projects.show', $project->id) }}" class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">View</a>
-                                        <a href="{{ route('projects.edit', $project->id) }}" class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">Edit</a>
-                                        
-                                        <form action="{{ route('projects.destroy', $project->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this project?');">
+                                        <a href="{{ route('projects.show', $project->id) }}"
+                                            class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">View</a>
+
+                                        @role('Super Admin|Sales Officer')
+                                        <a href="{{ route('projects.edit', $project->id) }}"
+                                            class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">Edit</a>
+
+                                        <form action="{{ route('projects.destroy', $project->id) }}" method="POST"
+                                            class="inline"
+                                            onsubmit="return confirm('Are you sure you want to delete this project?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-4">Delete</button>
+                                            <button type="submit"
+                                                class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:underline underline-offset-4">Delete</button>
                                         </form>
+                                        @endrole
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="6" class="px-6 py-14 text-center">
                                         <p class="text-sm {{ $muted }}">No projects yet.</p>
-                                        <a href="{{ route('projects.create') }}" class="inline-block mt-3 text-sm font-medium text-teal-700 dark:text-teal-300 underline underline-offset-4">Create your first project</a>
+                                        @role('Super Admin|Sales Officer')
+                                        <a href="{{ route('projects.create') }}"
+                                            class="inline-block mt-3 text-sm font-medium text-teal-700 dark:text-teal-300 underline underline-offset-4">Create
+                                            your first project</a>
+                                        @endrole
                                     </td>
                                 </tr>
                             @endforelse

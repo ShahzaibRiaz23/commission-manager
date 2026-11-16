@@ -15,10 +15,12 @@
                     <h1 class="font-serif text-3xl {{ $ink }} tracking-tight">Clients</h1>
                     <p class="text-sm {{ $muted }} mt-1">Everyone you work with, active or prospective.</p>
                 </div>
-                <a href="{{ route('clients.create') }}"
-                   class="inline-flex items-center px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-sm font-medium text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1622]">
-                    Add client
-                </a>
+                @role('Super Admin|Sales Officer')
+                    <a href="{{ route('clients.create') }}"
+                       class="inline-flex items-center px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-sm font-medium text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1622]">
+                        Add client
+                    </a>
+                @endrole
             </div>
 
             {{-- Table --}}
@@ -31,7 +33,9 @@
                                 <th class="{{ $th }}">Company</th>
                                 <th class="{{ $th }}">Email</th>
                                 <th class="{{ $th }}">Phone</th>
-                                <th class="{{ $th }} text-right">Actions</th>
+                                @role('Super Admin|Sales Officer')
+                                    <th class="{{ $th }} text-right">Actions</th>
+                                @endrole
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-white/10">
@@ -48,22 +52,27 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }}">{{ $client->company_name ?? '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }}">{{ $client->email ?? '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm {{ $muted }} tabular-nums">{{ $client->phone ?? '-' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                                        <a href="{{ route('clients.edit', $client->id) }}"
-                                           class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">Edit</a>
-                                        <form action="{{ route('clients.destroy', $client->id) }}" method="POST" class="inline-block"
-                                              onsubmit="return confirm('Are you sure you want to delete this client?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 dark:text-red-400 hover:underline underline-offset-4">Delete</button>
-                                        </form>
-                                    </td>
+                                    
+                                    @role('Super Admin|Sales Officer')
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
+                                            <a href="{{ route('clients.edit', $client->id) }}"
+                                               class="text-teal-700 dark:text-teal-300 hover:underline underline-offset-4">Edit</a>
+                                            <form action="{{ route('clients.destroy', $client->id) }}" method="POST" class="inline-block"
+                                                  onsubmit="return confirm('Are you sure you want to delete this client?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 dark:text-red-400 hover:underline underline-offset-4">Delete</button>
+                                            </form>
+                                        </td>
+                                    @endrole
                                 </tr>
                             @empty
                                 <tr>
                                     <td colspan="5" class="px-6 py-14 text-center">
                                         <p class="text-sm {{ $muted }}">No clients yet.</p>
-                                        <a href="{{ route('clients.create') }}" class="inline-block mt-3 text-sm font-medium text-teal-700 dark:text-teal-300 underline underline-offset-4">Add your first client</a>
+                                        @role('Super Admin|Sales Officer')
+                                            <a href="{{ route('clients.create') }}" class="inline-block mt-3 text-sm font-medium text-teal-700 dark:text-teal-300 underline underline-offset-4">Add your first client</a>
+                                        @endrole
                                     </td>
                                 </tr>
                             @endforelse

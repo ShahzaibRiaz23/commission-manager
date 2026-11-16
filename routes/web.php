@@ -13,52 +13,67 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
+    // User Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Client Management Routes
-    Route::resource('clients', ClientController::class);
-});
+    // ------------------------------------------------------------------------
+    // Read-Only Routes (Accessible to Super Admin, Sales Officer, & Experts/VA)
+    // ------------------------------------------------------------------------
+    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
 
-// Project Management Routes
-Route::resource('projects', ProjectController::class);
+    Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
 
-// Payment & Commission Ledger Routes
-Route::get('projects/{project}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-Route::post('projects/{project}/payments', [PaymentController::class, 'store'])->name('payments.store');
-Route::get('financial/payments', [PaymentController::class, 'index'])->name('payments.index');
-Route::patch('financial/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
-Route::get('financial/payments/export', [PaymentController::class, 'export'])->name('payments.export');
+    Route::get('financial/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('financial/payments/export', [PaymentController::class, 'export'])->name('payments.export');
 
-// Role-Based Dashboards & Super Admin Management
-Route::middleware(['auth', 'verified'])->group(function () {
+    // ------------------------------------------------------------------------
+    // Management Routes (Only Super Admin & Sales Officer - Experts strictly blocked)
+    // ------------------------------------------------------------------------
+    Route::middleware('role:Super Admin|Sales Officer')->group(function () {
+        // Client Create / Edit / Delete
+        Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
+        Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
+        Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
+        Route::put('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
+        Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
-    // Main / Admin Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
+        // Project Create / Edit / Delete
+        Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
+        Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+        Route::get('projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
+        Route::put('projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
-    // Admin: Create New Staff Account Form (Experts / Sales)
-    Route::get('/admin/users/create', [DashboardController::class, 'createUser'])
-        ->middleware('role:Super Admin')
-        ->name('admin.users.create');
+        // Record Payments
+        Route::get('projects/{project}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('projects/{project}/payments', [PaymentController::class, 'store'])->name('payments.store');
+    });
 
-    // Admin: Store New Staff Account in Database
-    Route::post('/admin/users', [DashboardController::class, 'storeUser'])
-        ->middleware('role:Super Admin')
-        ->name('admin.users.store');
+    // Super Admin Only: Status Approval & User Management
+    Route::middleware('role:Super Admin')->group(function () {
+        Route::patch('financial/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+        
+        Route::get('/admin/users/create', [DashboardController::class, 'createUser'])->name('admin.users.create');
+        Route::post('/admin/users', [DashboardController::class, 'storeUser'])->name('admin.users.store');
+    });
 
-    // Experts Dashboard
+    // ------------------------------------------------------------------------
+    // Dashboards
+    // ------------------------------------------------------------------------
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::get('/va/dashboard', [VADashboardController::class, 'index'])
         ->middleware('role:VA')
         ->name('va.dashboard');
 
-    // Sales Officer Dashboard
     Route::get('/sales/dashboard', [SalesDashboardController::class, 'index'])
         ->middleware('role:Sales Officer')
         ->name('sales.dashboard');
-
 });
 
 require __DIR__.'/auth.php';

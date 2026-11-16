@@ -25,7 +25,7 @@
                 <!-- Pending Projects -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <div class="text-gray-500 dark:text-gray-400 text-sm font-medium">Pending Projects</div>
-                    <div class="text-3xl font-bold text-amber-500 mt-2">{{ $pendingProjects }}</div>
+                    <div class="text-3xl font-bold text-amber-500 dark:text-amber-400 mt-2">{{ $pendingProjects }}</div>
                 </div>
 
                 <!-- Total Commission -->
@@ -60,16 +60,16 @@
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $project->client->name ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span
-                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $project->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $project->status == 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' }}">
                                                 {{ ucfirst($project->status) }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $project->created_at->format('Y-m-d') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No projects assigned
+                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No projects assigned
                                             yet.</td>
                                     </tr>
                                 @endforelse
@@ -99,14 +99,14 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap font-medium">{{ $client->name ?? 'N/A' }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $client->email ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $client->phone ?? 'N/A' }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500">No clients found for
+                                        <td colspan="3" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No clients found for
                                             assigned projects.</td>
                                     </tr>
                                 @endforelse
@@ -139,15 +139,15 @@
                                             {{ $payment->project->name ?? 'N/A' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             ${{ number_format($payment->payment_amount, 2) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-green-600 font-semibold">
+                                        <td class="px-6 py-4 whitespace-nowrap text-green-600 dark:text-green-400 font-semibold">
                                             ${{ number_format($payment->va_commission_amount, 2) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ optional($payment->payment_date)->format('Y-m-d') ?? $payment->created_at->format('Y-m-d') }}
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No payment records
+                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">No payment records
                                             found.</td>
                                     </tr>
                                 @endforelse

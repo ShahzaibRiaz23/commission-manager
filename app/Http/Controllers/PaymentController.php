@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\ProjectPayment;
+use App\Models\User;
 use App\Services\CommissionService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -28,7 +30,7 @@ class PaymentController extends Controller
             'recurring_payment_id' => 'nullable|exists:recurring_payments,id',
         ]);
 
-
+        // Pass the validated data including status to the service
         $commissionService->recordPayment($project, $validated);
 
         return redirect()->route('projects.show', $project->id)->with('success', 'Payment recorded and commissions calculated successfully.');
@@ -38,19 +40,7 @@ class PaymentController extends Controller
     public function index()
     {
         $user = auth()->user();
-
-        $query = ProjectPayment::with(['project.client']);
-
-        if ($user->hasRole('Sales Officer')) {
-            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
-            $query->whereIn('project_id', $projectIds);
-        } elseif ($user->hasRole('VA')) {
-            $projectIds = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))->pluck('id');
-            $query->whereIn('project_id', $projectIds);
-        } elseif (!$user->hasRole('Super Admin')) {
-            $query->whereRaw('1 = 0');
-        }
-
+        $query = $this->scopePaymentsForUser(ProjectPayment::with(['project.client']), $user);
         $payments = $query->latest('payment_date')->paginate(15);
 
         return view('payments.index', compact('payments'));
@@ -72,20 +62,9 @@ class PaymentController extends Controller
     public function export(): StreamedResponse
     {
         $user = auth()->user();
-        $fileName = 'payments_ledger_' . date('Y-m-d') . '.csv';
+        $fileName = 'payments_ledger_'.date('Y-m-d').'.csv';
 
-        $query = ProjectPayment::with(['project.client']);
-
-        if ($user->hasRole('Sales Officer')) {
-            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
-            $query->whereIn('project_id', $projectIds);
-        } elseif ($user->hasRole('VA')) {
-            $projectIds = $user->projects()->pluck('projects.id');
-            $query->whereIn('project_id', $projectIds);
-        } elseif (!$user->hasRole('Super Admin')) {
-            $query->whereRaw('1 = 0');
-        }
-
+        $query = $this->scopePaymentsForUser(ProjectPayment::with(['project.client']), $user);
         $payments = $query->latest('payment_date')->get();
 
         $callback = function () use ($payments) {
@@ -113,11 +92,33 @@ class PaymentController extends Controller
         };
 
         return response()->stream($callback, 200, [
-            "Content-type" => "text/csv",
+            'Content-type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=$fileName",
-            "Pragma" => "no-cache",
-            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
-            "Expires" => "0"
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
         ]);
+    }
+
+    private function scopePaymentsForUser(Builder $query, User $user): Builder
+    {
+        if ($user->hasRole('Super Admin')) {
+            return $query;
+        }
+
+        if ($user->hasRole('Sales Officer')) {
+            $projectIds = Project::where('sales_officer_id', $user->id)->pluck('id');
+
+            return $query->whereIn('project_id', $projectIds);
+        }
+
+        if ($user->hasRole('VA')) {
+            $projectIds = Project::whereHas('vas', fn ($query) => $query->where('users.id', $user->id))
+                ->pluck('id');
+
+            return $query->whereIn('project_id', $projectIds);
+        }
+
+        return $query->whereRaw('1 = 0');
     }
 }

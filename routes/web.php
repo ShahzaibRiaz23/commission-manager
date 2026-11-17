@@ -20,29 +20,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // ------------------------------------------------------------------------
-    // Read-Only Routes (Accessible to Super Admin, Sales Officer, & Experts/VA)
-    // ------------------------------------------------------------------------
-    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
-    Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
-
-    Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
-    Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
-
-    Route::get('financial/payments', [PaymentController::class, 'index'])->name('payments.index');
-    Route::get('financial/payments/export', [PaymentController::class, 'export'])->name('payments.export');
-
-    // ------------------------------------------------------------------------
-    // Management Routes (Only Super Admin & Sales Officer - Experts strictly blocked)
+    // Management Routes (Only Super Admin & Sales Officer)
+    // NOTE: Static routes like '/create' MUST be placed BEFORE wildcard routes like '/{client}'
     // ------------------------------------------------------------------------
     Route::middleware('role:Super Admin|Sales Officer')->group(function () {
-        // Client Create / Edit / Delete
+        // Client Create / Store / Edit / Update / Destroy
         Route::get('clients/create', [ClientController::class, 'create'])->name('clients.create');
         Route::post('clients', [ClientController::class, 'store'])->name('clients.store');
         Route::get('clients/{client}/edit', [ClientController::class, 'edit'])->name('clients.edit');
         Route::put('clients/{client}', [ClientController::class, 'update'])->name('clients.update');
         Route::delete('clients/{client}', [ClientController::class, 'destroy'])->name('clients.destroy');
 
-        // Project Create / Edit / Delete
+        // Project Create / Store / Edit / Update / Destroy
         Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
         Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
         Route::get('projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
@@ -61,6 +50,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/admin/users/create', [DashboardController::class, 'createUser'])->name('admin.users.create');
         Route::post('/admin/users', [DashboardController::class, 'storeUser'])->name('admin.users.store');
     });
+
+    // ------------------------------------------------------------------------
+    // Read-Only & Wildcard Routes (Index and Show pages)
+    // ------------------------------------------------------------------------
+    Route::get('clients', [ClientController::class, 'index'])->name('clients.index');
+    Route::get('clients/{client}', [ClientController::class, 'show'])->name('clients.show');
+
+    Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
+
+    Route::get('financial/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('financial/payments/export', [PaymentController::class, 'export'])->name('payments.export');
 
     // ------------------------------------------------------------------------
     // Dashboards

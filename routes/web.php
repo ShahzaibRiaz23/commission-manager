@@ -39,15 +39,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
         Route::delete('projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
-        // Record Payments
-        Route::get('projects/{project}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
-        Route::post('projects/{project}/payments', [PaymentController::class, 'store'])->name('payments.store');
     });
 
-    // Super Admin Only: Status Approval, User Management & Commission Settings
+    // Super Admin Only: Payment Recording, Status Approval, User Management & Commission Settings
     Route::middleware('role:Super Admin')->group(function () {
+        Route::get('projects/{project}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('projects/{project}/payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::patch('financial/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
-        
+
         Route::get('/admin/users/create', [DashboardController::class, 'createUser'])->name('admin.users.create');
         Route::post('/admin/users', [DashboardController::class, 'storeUser'])->name('admin.users.store');
 

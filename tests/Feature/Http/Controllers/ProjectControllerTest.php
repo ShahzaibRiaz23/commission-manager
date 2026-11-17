@@ -6,6 +6,7 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -102,5 +103,140 @@ class ProjectControllerTest extends TestCase
             'name' => 'Officer Created Project',
             'sales_officer_id' => $salesOfficer->id,
         ]);
+    }
+
+    public static function assignmentRoles(): array
+    {
+        return [
+            'sales officer' => ['Sales Officer'],
+            'expert' => ['VA'],
+        ];
+    }
+
+    #[DataProvider('assignmentRoles')]
+    public function test_project_list_contains_only_projects_assigned_to_the_current_user(string $roleName): void
+    {
+        $role = Role::create(['name' => $roleName, 'guard_name' => 'web']);
+        $user = User::factory()->create();
+        $anotherUser = User::factory()->create();
+        $user->assignRole($role);
+        $anotherUser->assignRole($role);
+        $client = Client::create(['name' => 'Test Client']);
+
+        $assignedProject = $this->createProjectForUser($client, $user, $roleName, 'Assigned Project');
+        $this->createProjectForUser($client, $anotherUser, $roleName, 'Unassigned Project');
+
+        $response = $this->actingAs($user)->get(route('projects.index'));
+
+        $response->assertOk()
+            ->assertSeeText($assignedProject->name)
+            ->assertDontSeeText('Unassigned Project');
+    }
+
+    #[DataProvider('assignmentRoles')]
+    public function test_project_details_return_404_for_projects_not_assigned_to_the_current_user(string $roleName): void
+    {
+        $role = Role::create(['name' => $roleName, 'guard_name' => 'web']);
+        $user = User::factory()->create();
+        $anotherUser = User::factory()->create();
+        $user->assignRole($role);
+        $anotherUser->assignRole($role);
+        $client = Client::create(['name' => 'Test Client']);
+        $project = $this->createProjectForUser($client, $anotherUser, $roleName, 'Unassigned Project');
+
+        $response = $this->actingAs($user)->get(route('projects.show', $project));
+
+        $response->assertNotFound();
+    }
+
+    #[DataProvider('assignmentRoles')]
+    public function test_assigned_non_admin_project_details_hide_the_record_payment_action(string $roleName): void
+    {
+        $role = Role::create(['name' => $roleName, 'guard_name' => 'web']);
+        $user = User::factory()->create();
+        $user->assignRole($role);
+        $client = Client::create(['name' => 'Test Client']);
+        $project = $this->createProjectForUser($client, $user, $roleName, 'Assigned Project');
+
+        $response = $this->actingAs($user)->get(route('projects.show', $project));
+
+        $response->assertOk()
+            ->assertSeeText($project->name)
+            ->assertDontSeeText('+ Record Payment');
+    }
+
+    public function test_sales_officer_cannot_open_an_unassigned_project_edit_form(): void
+    {
+        $salesOfficerRole = Role::create(['name' => 'Sales Officer', 'guard_name' => 'web']);
+        $salesOfficer = User::factory()->create();
+        $anotherOfficer = User::factory()->create();
+        $salesOfficer->assignRole($salesOfficerRole);
+        $anotherOfficer->assignRole($salesOfficerRole);
+        $client = Client::create(['name' => 'Test Client']);
+        $project = $this->createProjectForUser($client, $anotherOfficer, 'Sales Officer', 'Unassigned Project');
+
+        $response = $this->actingAs($salesOfficer)->get(route('projects.edit', $project));
+
+        $response->assertNotFound();
+    }
+
+    public function test_sales_officer_cannot_update_an_unassigned_project(): void
+    {
+        $salesOfficerRole = Role::create(['name' => 'Sales Officer', 'guard_name' => 'web']);
+        $salesOfficer = User::factory()->create();
+        $anotherOfficer = User::factory()->create();
+        $salesOfficer->assignRole($salesOfficerRole);
+        $anotherOfficer->assignRole($salesOfficerRole);
+        $client = Client::create(['name' => 'Test Client']);
+        $project = $this->createProjectForUser($client, $anotherOfficer, 'Sales Officer', 'Unassigned Project');
+
+        $response = $this->actingAs($salesOfficer)->put(route('projects.update', $project), [
+            'name' => 'Changed Project',
+            'client_id' => $client->id,
+            'sales_officer_id' => $anotherOfficer->id,
+            'project_amount' => 1000,
+            'payment_type' => 'one-time',
+            'status' => 'active',
+        ]);
+
+        $response->assertNotFound();
+        $this->assertDatabaseHas('projects', [
+            'id' => $project->id,
+            'name' => 'Unassigned Project',
+        ]);
+    }
+
+    public function test_sales_officer_cannot_delete_an_unassigned_project(): void
+    {
+        $salesOfficerRole = Role::create(['name' => 'Sales Officer', 'guard_name' => 'web']);
+        $salesOfficer = User::factory()->create();
+        $anotherOfficer = User::factory()->create();
+        $salesOfficer->assignRole($salesOfficerRole);
+        $anotherOfficer->assignRole($salesOfficerRole);
+        $client = Client::create(['name' => 'Test Client']);
+        $project = $this->createProjectForUser($client, $anotherOfficer, 'Sales Officer', 'Unassigned Project');
+
+        $response = $this->actingAs($salesOfficer)->delete(route('projects.destroy', $project));
+
+        $response->assertNotFound();
+        $this->assertModelExists($project);
+    }
+
+    private function createProjectForUser(Client $client, User $user, string $roleName, string $name): Project
+    {
+        $project = Project::create([
+            'name' => $name,
+            'client_id' => $client->id,
+            'sales_officer_id' => $roleName === 'Sales Officer' ? $user->id : null,
+            'project_amount' => 1000,
+            'payment_type' => 'one-time',
+            'status' => 'active',
+        ]);
+
+        if ($roleName === 'VA') {
+            $project->vas()->attach($user);
+        }
+
+        return $project;
     }
 }

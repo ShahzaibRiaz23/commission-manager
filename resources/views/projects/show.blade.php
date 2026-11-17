@@ -15,6 +15,7 @@
                     <p class="text-sm {{ $muted }} mt-1">Project Details & Payment History</p>
                 </div>
                 <div class="flex items-center gap-3">
+                    @role('Super Admin|Sales Officer')
                     <a href="{{ route('projects.edit', $project) }}"
                         class="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium transition shadow-sm">Edit
                         Project</a>
@@ -28,6 +29,7 @@
                             Delete Project
                         </button>
                     </form>
+                    @endrole
 
                     <a href="{{ route('projects.index') }}"
                         class="px-4 py-2 rounded-lg border border-[#12263A]/20 dark:border-white/20 text-sm font-medium {{ $ink }} hover:bg-white dark:hover:bg-white/10 transition">Back
@@ -77,10 +79,12 @@
             <div class="{{ $card }} p-6 space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="font-semibold text-base {{ $ink }}">Payments History</h3>
+                    @role('Super Admin')
                     <a href="{{ route('payments.create', $project) }}"
                         class="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium transition shadow-sm">
                         + Record Payment
                     </a>
+                    @endrole
                 </div>
                 @if($project->payments->count() > 0)
                     <div class="overflow-x-auto">

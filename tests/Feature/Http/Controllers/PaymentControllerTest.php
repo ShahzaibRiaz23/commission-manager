@@ -7,6 +7,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Services\CommissionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -98,5 +99,62 @@ class PaymentControllerTest extends TestCase
         $response->assertOk()
             ->assertSeeText('Assigned Ledger Project')
             ->assertDontSeeText('Other Officer Ledger Project');
+    }
+
+    public static function nonAdminRoles(): array
+    {
+        return [
+            'sales officer' => ['Sales Officer'],
+            'expert' => ['VA'],
+        ];
+    }
+
+    #[DataProvider('nonAdminRoles')]
+    public function test_non_admin_roles_cannot_open_the_project_payment_form(string $roleName): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(Role::create(['name' => $roleName, 'guard_name' => 'web']));
+        $project = $this->createProjectForRole($user, $roleName);
+
+        $response = $this->actingAs($user)->get(route('payments.create', $project));
+
+        $response->assertForbidden();
+    }
+
+    #[DataProvider('nonAdminRoles')]
+    public function test_non_admin_roles_cannot_record_project_payments(string $roleName): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole(Role::create(['name' => $roleName, 'guard_name' => 'web']));
+        $project = $this->createProjectForRole($user, $roleName);
+
+        $response = $this->actingAs($user)->post(route('payments.store', $project), [
+            'payment_amount' => 250,
+            'payment_date' => '2026-11-17',
+            'payment_type' => 'one-time',
+            'status' => 'pending',
+        ]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseCount('project_payments', 0);
+    }
+
+    private function createProjectForRole(User $user, string $roleName): Project
+    {
+        $client = Client::create(['name' => 'Test Client']);
+        $project = Project::create([
+            'name' => 'Assigned Project',
+            'client_id' => $client->id,
+            'sales_officer_id' => $roleName === 'Sales Officer' ? $user->id : null,
+            'project_amount' => 1000,
+            'payment_type' => 'one-time',
+            'status' => 'active',
+        ]);
+
+        if ($roleName === 'VA') {
+            $project->vas()->attach($user);
+        }
+
+        return $project;
     }
 }

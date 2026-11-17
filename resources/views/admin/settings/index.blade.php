@@ -3,7 +3,7 @@
         $card = 'bg-white dark:bg-[#12263A] rounded-2xl border border-[#12263A]/10 dark:border-white/10';
         $ink = 'text-[#12263A] dark:text-slate-100';
         $muted = 'text-slate-500 dark:text-slate-400';
-        $field = 'w-full rounded-lg border-slate-300 dark:border-white/20 dark:bg-[#0B1622] dark:text-slate-100 text-sm focus:border-teal-600 focus:ring-teal-600';
+        $field = 'w-full rounded-lg border-slate-300 bg-white text-[#12263A] dark:border-white/20 dark:bg-[#0B1622] dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-colors focus:border-teal-600 focus:ring-teal-600';
     @endphp
 
     <div class="min-h-screen bg-[#EDF1F5] dark:bg-[#0B1622] py-8 transition-colors">
@@ -16,7 +16,7 @@
                     <p class="text-sm {{ $muted }} mt-1">Configure default percentages for One-time and Recurring projects.</p>
                 </div>
                 <a href="{{ route('dashboard') }}"
-                    class="px-4 py-2 rounded-lg border border-[#12263A]/20 dark:border-white/20 text-sm font-medium {{ $ink }} hover:bg-white dark:hover:bg-white/10 transition">
+                    class="px-4 py-2 rounded-lg border border-[#12263A]/20 dark:border-white/20 text-sm font-medium {{ $ink }} hover:bg-white dark:hover:bg-white/10 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1622]">
                     Back to Dashboard
                 </a>
             </div>
@@ -28,7 +28,7 @@
             @endif
 
             {{-- Form Card --}}
-            <div class="{{ $card }} p-8">
+            <div class="{{ $card }} p-8 transition-colors">
                 <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')
@@ -84,7 +84,7 @@
                     <!-- Actions -->
                     <div class="flex items-center justify-end gap-4 pt-4 border-t border-slate-100 dark:border-white/10">
                         <button type="submit"
-                            class="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-sm font-medium text-white transition">
+                            class="px-6 py-2.5 rounded-lg bg-teal-600 hover:bg-teal-700 text-sm font-medium text-white transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B1622]">
                             Save Settings
                         </button>
                     </div>

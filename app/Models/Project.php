@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,13 +32,47 @@ class Project extends Model
         'deadline' => 'date',
     ];
 
-    // Client relationship 
+    #[Scope]
+    protected function visibleTo(Builder $query, User $user): void
+    {
+        if ($user->hasRole('Super Admin')) {
+            return;
+        }
+
+        $isSalesOfficer = $user->hasRole('Sales Officer');
+        $isVa = $user->hasRole('VA');
+
+        if ($isSalesOfficer && $isVa) {
+            $query->where(function (Builder $query) use ($user): void {
+                $query->where('sales_officer_id', $user->getKey())
+                    ->orWhereHas('vas', fn (Builder $query) => $query->whereKey($user->getKey()));
+            });
+
+            return;
+        }
+
+        if ($isSalesOfficer) {
+            $query->where('sales_officer_id', $user->getKey());
+
+            return;
+        }
+
+        if ($isVa) {
+            $query->whereHas('vas', fn (Builder $query) => $query->whereKey($user->getKey()));
+
+            return;
+        }
+
+        $query->whereRaw('1 = 0');
+    }
+
+    // Client relationship
     public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    // Sales Officer relationship 
+    // Sales Officer relationship
     public function salesOfficer()
     {
         return $this->belongsTo(User::class, 'sales_officer_id');
@@ -46,8 +82,8 @@ class Project extends Model
     public function vas()
     {
         return $this->belongsToMany(User::class, 'project_user', 'project_id', 'user_id')
-                    ->withPivot('custom_commission_percentage')
-                    ->withTimestamps();
+            ->withPivot('custom_commission_percentage')
+            ->withTimestamps();
     }
 
     // Recurring Payment relationship

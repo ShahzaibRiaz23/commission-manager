@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
 use App\Models\Client;
-use App\Models\User;
+use App\Models\Project;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -15,21 +15,10 @@ class ProjectController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasRole('Super Admin')) {
-            $projects = Project::with(['client', 'salesOfficer', 'vas'])->latest()->paginate(10);
-        } elseif ($user->hasRole('Sales Officer')) {
-            $projects = Project::where('sales_officer_id', $user->id)
-                ->with(['client', 'salesOfficer', 'vas'])
-                ->latest()
-                ->paginate(10);
-        } elseif ($user->hasRole('VA')) {
-            $projects = Project::whereHas('vas', fn($q) => $q->where('users.id', $user->id))
-                ->with(['client', 'salesOfficer', 'vas'])
-                ->latest()
-                ->paginate(10);
-        } else {
-            $projects = Project::whereRaw('1 = 0')->paginate(10);
-        }
+        $projects = Project::visibleTo($user)
+            ->with(['client', 'salesOfficer', 'vas'])
+            ->latest()
+            ->paginate(10);
 
         return view('projects.index', compact('projects'));
     }
@@ -65,18 +54,18 @@ class ProjectController extends Controller
         ]);
 
         // Sales Officer restriction & auto-assignment
-        if ($user->hasRole('Sales Officer') && !$user->hasRole('Super Admin')) {
+        if ($user->hasRole('Sales Officer') && ! $user->hasRole('Super Admin')) {
             $validated['sales_officer_id'] = $user->id;
             unset($validated['va_commission_percentage'], $validated['sales_commission_percentage']);
         }
 
         // Auto-assign default commissions based on payment_type if not explicitly set
-        if (!isset($validated['va_commission_percentage']) || $validated['va_commission_percentage'] === null) {
+        if (! isset($validated['va_commission_percentage']) || $validated['va_commission_percentage'] === null) {
             $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_va' : 'default_recurring_va';
             $validated['va_commission_percentage'] = Setting::where('key', $key)->value('value') ?? 10.00;
         }
 
-        if (!isset($validated['sales_commission_percentage']) || $validated['sales_commission_percentage'] === null) {
+        if (! isset($validated['sales_commission_percentage']) || $validated['sales_commission_percentage'] === null) {
             $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_sales' : 'default_recurring_sales';
             $validated['sales_commission_percentage'] = Setting::where('key', $key)->value('value') ?? 5.00;
         }
@@ -85,7 +74,7 @@ class ProjectController extends Controller
         $project = Project::create($validated);
 
         // Attach VAs if selected by Super Admin
-        if ($user->hasRole('Super Admin') && !empty($validated['vas'])) {
+        if ($user->hasRole('Super Admin') && ! empty($validated['vas'])) {
             $project->vas()->attach($validated['vas']);
         }
 
@@ -95,13 +84,16 @@ class ProjectController extends Controller
     // Show project details
     public function show(Project $project)
     {
+        $project = $this->resolveVisibleProject($project);
         $project->load(['client', 'salesOfficer', 'vas', 'recurringPayment', 'payments']);
+
         return view('projects.show', compact('project'));
     }
 
     // Show form to edit project
     public function edit(Project $project)
     {
+        $project = $this->resolveVisibleProject($project);
         $clients = Client::orderBy('name')->get();
         $vas = User::role('VA')->orderBy('name')->get();
         $salesOfficers = User::role('Sales Officer')->orderBy('name')->get();
@@ -115,6 +107,7 @@ class ProjectController extends Controller
     // Update project
     public function update(Request $request, Project $project)
     {
+        $project = $this->resolveVisibleProject($project);
         $user = auth()->user();
 
         $validated = $request->validate([
@@ -133,18 +126,18 @@ class ProjectController extends Controller
         ]);
 
         // Only non-admin Sales Officers are restricted to assigning themselves.
-        if ($user->hasRole('Sales Officer') && !$user->hasRole('Super Admin')) {
+        if ($user->hasRole('Sales Officer') && ! $user->hasRole('Super Admin')) {
             $validated['sales_officer_id'] = $user->id;
             unset($validated['va_commission_percentage'], $validated['sales_commission_percentage']);
         }
 
         // If payment type changes during update and commission fields are omitted/null, fallback to dynamic defaults
-        if (!isset($validated['va_commission_percentage']) || $validated['va_commission_percentage'] === null) {
+        if (! isset($validated['va_commission_percentage']) || $validated['va_commission_percentage'] === null) {
             $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_va' : 'default_recurring_va';
             $validated['va_commission_percentage'] = Setting::where('key', $key)->value('value') ?? $project->va_commission_percentage;
         }
 
-        if (!isset($validated['sales_commission_percentage']) || $validated['sales_commission_percentage'] === null) {
+        if (! isset($validated['sales_commission_percentage']) || $validated['sales_commission_percentage'] === null) {
             $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_sales' : 'default_recurring_sales';
             $validated['sales_commission_percentage'] = Setting::where('key', $key)->value('value') ?? $project->sales_commission_percentage;
         }
@@ -166,7 +159,14 @@ class ProjectController extends Controller
     // Delete project
     public function destroy(Project $project)
     {
+        $project = $this->resolveVisibleProject($project);
         $project->delete();
+
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
+    }
+
+    private function resolveVisibleProject(Project $project): Project
+    {
+        return Project::visibleTo(auth()->user())->findOrFail($project->getKey());
     }
 }

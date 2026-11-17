@@ -6,6 +6,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SalesDashboardController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\VADashboardController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,12 +44,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('projects/{project}/payments', [PaymentController::class, 'store'])->name('payments.store');
     });
 
-    // Super Admin Only: Status Approval & User Management
+    // Super Admin Only: Status Approval, User Management & Commission Settings
     Route::middleware('role:Super Admin')->group(function () {
         Route::patch('financial/payments/{payment}/status', [PaymentController::class, 'updateStatus'])->name('payments.updateStatus');
         
         Route::get('/admin/users/create', [DashboardController::class, 'createUser'])->name('admin.users.create');
         Route::post('/admin/users', [DashboardController::class, 'storeUser'])->name('admin.users.store');
+
+        // Commission Settings Routes
+        Route::get('/admin/settings', [SettingController::class, 'index'])->name('admin.settings.index');
+        Route::put('/admin/settings', [SettingController::class, 'update'])->name('admin.settings.update');
     });
 
     // ------------------------------------------------------------------------

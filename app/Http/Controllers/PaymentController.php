@@ -36,12 +36,20 @@ class PaymentController extends Controller
         return redirect()->route('projects.show', $project->id)->with('success', 'Payment recorded and commissions calculated successfully.');
     }
 
-    // List all financial payment transactions (Role-based scoped)
-    public function index()
+    // List all financial payment transactions (Role-based & Status scoped)
+    public function index(Request $request)
     {
         $user = auth()->user();
-        $query = $this->scopePaymentsForUser(ProjectPayment::with(['project.client']), $user);
-        $payments = $query->latest('payment_date')->paginate(15);
+
+        // Use the centralized scope helper with ProjectPayment model
+        $query = $this->scopePaymentsForUser(ProjectPayment::query(), $user);
+
+        // Status Filter logic
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $payments = $query->with(['project.client'])->latest()->paginate(10)->withQueryString();
 
         return view('payments.index', compact('payments'));
     }
@@ -59,12 +67,18 @@ class PaymentController extends Controller
     }
 
     // Export filtered payments ledger to CSV
-    public function export(): StreamedResponse
+    public function export(Request $request): StreamedResponse
     {
         $user = auth()->user();
-        $fileName = 'payments_ledger_'.date('Y-m-d').'.csv';
+        $fileName = 'payments_ledger_' . date('Y-m-d') . '.csv';
 
         $query = $this->scopePaymentsForUser(ProjectPayment::with(['project.client']), $user);
+
+        // Support status filter in export if passed via query string
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
         $payments = $query->latest('payment_date')->get();
 
         $callback = function () use ($payments) {
@@ -113,7 +127,7 @@ class PaymentController extends Controller
         }
 
         if ($user->hasRole('VA')) {
-            $projectIds = Project::whereHas('vas', fn ($query) => $query->where('users.id', $user->id))
+            $projectIds = Project::whereHas('vas', fn($query) => $query->where('users.id', $user->id))
                 ->pluck('id');
 
             return $query->whereIn('project_id', $projectIds);

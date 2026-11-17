@@ -4,6 +4,12 @@
         $ink = 'text-[#12263A] dark:text-slate-100';
         $muted = 'text-slate-500 dark:text-slate-400';
         $field = 'w-full rounded-lg border-slate-300 dark:border-white/20 dark:bg-[#0B1622] dark:text-slate-100 text-sm focus:border-teal-600 focus:ring-teal-600';
+
+        // Fetch default commission settings from database for dynamic initialization
+        $oneTimeVa = \App\Models\Setting::where('key', 'default_one_time_va')->value('value') ?? '10.00';
+        $oneTimeSales = \App\Models\Setting::where('key', 'default_one_time_sales')->value('value') ?? '5.00';
+        $recurringVa = \App\Models\Setting::where('key', 'default_recurring_va')->value('value') ?? '10.00';
+        $recurringSales = \App\Models\Setting::where('key', 'default_recurring_sales')->value('value') ?? '5.00';
     @endphp
 
     <div class="min-h-screen bg-[#EDF1F5] dark:bg-[#0B1622] py-8 transition-colors">
@@ -23,10 +29,28 @@
                 </div>
             </div>
 
-            {{-- Form Card --}}
-            <div class="{{ $card }} p-8">
+            {{-- Form Card with Alpine.js Dynamic Auto-Fill --}}
+            <div class="{{ $card }} p-8" x-data="{
+                     paymentType: '{{ old('payment_type', 'one-time') }}',
+                     vaPercentage: '{{ old('va_commission_percentage', $oneTimeVa) }}',
+                     salesPercentage: '{{ old('sales_commission_percentage', $oneTimeSales) }}',
+                     
+                     updateDefaults() {
+                         if (this.paymentType === 'one-time') {
+                             this.vaPercentage = '{{ $oneTimeVa }}';
+                             this.salesPercentage = '{{ $oneTimeSales }}';
+                         } else if (this.paymentType === 'recurring') {
+                             this.vaPercentage = '{{ $recurringVa }}';
+                             this.salesPercentage = '{{ $recurringSales }}';
+                         }
+                     }
+                 }">
                 <form action="{{ route('projects.store') }}" method="POST" class="space-y-6">
                     @csrf
+
+                    <!-- Hidden Inputs for Automatic Commission Assignment based on Payment Type -->
+                    <input type="hidden" name="va_commission_percentage" x-model="vaPercentage">
+                    <input type="hidden" name="sales_commission_percentage" x-model="salesPercentage">
 
                     <!-- Project Name -->
                     <div>
@@ -77,9 +101,10 @@
                             <label for="payment_type"
                                 class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Payment
                                 Type *</label>
-                            <select name="payment_type" id="payment_type" required class="{{ $field }}">
-                                <option value="one-time" @selected(old('payment_type') == 'one-time')>One-time</option>
-                                <option value="recurring" @selected(old('payment_type') == 'recurring')>Recurring</option>
+                            <select name="payment_type" id="payment_type" x-model="paymentType"
+                                @change="updateDefaults()" required class="{{ $field }}">
+                                <option value="one-time">One-time</option>
+                                <option value="recurring">Recurring</option>
                             </select>
                             @error('payment_type')
                                 <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
@@ -100,35 +125,6 @@
                             @enderror
                         </div>
                     </div>
-
-                    <!-- Commission Percentages (Visible only to Super Admin) -->
-                    @role('Super Admin')
-                    <div class="grid sm:grid-cols-2 gap-6">
-                        <div>
-                            <label for="va_commission_percentage"
-                                class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Experts
-                                Commission (%)</label>
-                            <input type="number" step="0.01" name="va_commission_percentage"
-                                id="va_commission_percentage" value="{{ old('va_commission_percentage', '10.00') }}"
-                                class="{{ $field }}">
-                            @error('va_commission_percentage')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="sales_commission_percentage"
-                                class="block text-xs font-semibold uppercase tracking-wider {{ $muted }} mb-2">Sales
-                                Commission (%)</label>
-                            <input type="number" step="0.01" name="sales_commission_percentage"
-                                id="sales_commission_percentage"
-                                value="{{ old('sales_commission_percentage', '10.00') }}" class="{{ $field }}">
-                            @error('sales_commission_percentage')
-                                <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                    @endrole
 
                     <!-- Assign Expert (Visible only to Super Admin) -->
                     @role('Super Admin')

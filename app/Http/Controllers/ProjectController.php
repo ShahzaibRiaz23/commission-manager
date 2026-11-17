@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Client;
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
@@ -64,10 +65,20 @@ class ProjectController extends Controller
         ]);
 
         // Sales Officer restriction & auto-assignment
-        if ($user->hasRole('Sales Officer') && ! $user->hasRole('Super Admin')) {
+        if ($user->hasRole('Sales Officer') && !$user->hasRole('Super Admin')) {
             $validated['sales_officer_id'] = $user->id;
-            // Prevent commission manipulation from request payload
             unset($validated['va_commission_percentage'], $validated['sales_commission_percentage']);
+        }
+
+        // Auto-assign default commissions based on payment_type if not explicitly set
+        if (!isset($validated['va_commission_percentage']) || $validated['va_commission_percentage'] === null) {
+            $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_va' : 'default_recurring_va';
+            $validated['va_commission_percentage'] = Setting::where('key', $key)->value('value') ?? 10.00;
+        }
+
+        if (!isset($validated['sales_commission_percentage']) || $validated['sales_commission_percentage'] === null) {
+            $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_sales' : 'default_recurring_sales';
+            $validated['sales_commission_percentage'] = Setting::where('key', $key)->value('value') ?? 5.00;
         }
 
         // Create the project
@@ -122,9 +133,20 @@ class ProjectController extends Controller
         ]);
 
         // Only non-admin Sales Officers are restricted to assigning themselves.
-        if ($user->hasRole('Sales Officer') && ! $user->hasRole('Super Admin')) {
+        if ($user->hasRole('Sales Officer') && !$user->hasRole('Super Admin')) {
             $validated['sales_officer_id'] = $user->id;
             unset($validated['va_commission_percentage'], $validated['sales_commission_percentage']);
+        }
+
+        // If payment type changes during update and commission fields are omitted/null, fallback to dynamic defaults
+        if (!isset($validated['va_commission_percentage']) || $validated['va_commission_percentage'] === null) {
+            $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_va' : 'default_recurring_va';
+            $validated['va_commission_percentage'] = Setting::where('key', $key)->value('value') ?? $project->va_commission_percentage;
+        }
+
+        if (!isset($validated['sales_commission_percentage']) || $validated['sales_commission_percentage'] === null) {
+            $key = $validated['payment_type'] === 'one-time' ? 'default_one_time_sales' : 'default_recurring_sales';
+            $validated['sales_commission_percentage'] = Setting::where('key', $key)->value('value') ?? $project->sales_commission_percentage;
         }
 
         $project->update($validated);
